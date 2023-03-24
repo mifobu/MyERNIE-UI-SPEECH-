@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Calendar Page.unity
     guid: f16f9e3d836402b4684418a4cde03724
+  - enabled: 1
+    path: Assets/Scenes/Answer Page.unity
+    guid: 0d365b5b1b3891a4db849df4b4cefd8c
   m_configObjects: {}
