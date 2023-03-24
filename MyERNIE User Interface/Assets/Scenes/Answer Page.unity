@@ -1194,8 +1194,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'This will be the answer to the question. We will pull from a webpage to
-    get the response that corresponds to the keywords from the question the user
+  m_text: 'This will be the answer to the question. We will pull from a webpage database
+    to get the response that corresponds to the keywords from the question the user
     asked. '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
