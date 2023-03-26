@@ -2,11 +2,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition
 {
 	public class GCSpeechRecognition : MonoBehaviour
 	{
+		public TextMeshProUGUI textResult;
+
 		private static GCSpeechRecognition _Instance;
 		public static GCSpeechRecognition Instance
 		{

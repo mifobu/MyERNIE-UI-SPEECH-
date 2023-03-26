@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 {
@@ -32,6 +34,8 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 						   _operationIdInputField;
 
 		private Image _voiceLevelImage;
+
+		
 
 		private void Start()
 		{
@@ -393,7 +397,12 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 				return;
 			}
 
+			//Testing for getting text to appear on Answer Page
 			_resultText.text += "\n" + recognitionResponse.results[0].alternatives[0].transcript;
+			Debug.Log(recognitionResponse.results[0].alternatives[0].transcript);
+			//textResult.GetComponent<TextMeshProUGUI>().text = recognitionResponse.results[0].alternatives[0].transcript;
+			_speechRecognition.textResult.GetComponent<TextMeshProUGUI>().text = recognitionResponse.results[0].alternatives[0].transcript;
+			//SceneManager.LoadScene("Answer Page");
 
 			var words = recognitionResponse.results[0].alternatives[0].words;
 
