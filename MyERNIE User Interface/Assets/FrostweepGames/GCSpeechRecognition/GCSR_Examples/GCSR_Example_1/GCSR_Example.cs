@@ -1,12 +1,17 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 {
 	public class GCSR_Example : MonoBehaviour
 	{
 		private GCSpeechRecognition _speechRecognition;
+		
+		//String for storing text to put on Answer Page
+		public static string speechText;
 
 		private Button _startRecordButton,
 					   _stopRecordButton,
@@ -32,6 +37,7 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 						   _operationIdInputField;
 
 		private Image _voiceLevelImage;
+
 
 		private void Start()
 		{
@@ -393,12 +399,18 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 				return;
 			}
 
+
 			_resultText.text += "\n" + recognitionResponse.results[0].alternatives[0].transcript;
 
 			var words = recognitionResponse.results[0].alternatives[0].words;
 
 			if (words != null)
 			{
+				//My code for getting text on Answer Page
+				//Debug.Log(recognitionResponse.results[0].alternatives[0].transcript);
+				speechText = recognitionResponse.results[0].alternatives[0].transcript;
+				SceneManager.LoadScene("Answer Page");
+
 				string times = string.Empty;
 
 				foreach (var item in recognitionResponse.results[0].alternatives[0].words)
@@ -407,6 +419,8 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 				}
 
 				_resultText.text += "\n" + times;
+
+				
 			}
 
 			string other = "\nDetected alternatives: ";
@@ -424,5 +438,5 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 
 			_resultText.text += other;
 		}
-    }
+	}
 }

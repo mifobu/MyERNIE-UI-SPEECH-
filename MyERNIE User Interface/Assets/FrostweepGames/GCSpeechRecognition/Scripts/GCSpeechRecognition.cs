@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition
 {
 	public class GCSpeechRecognition : MonoBehaviour
 	{
-		private static GCSpeechRecognition _Instance;
+		public static GCSpeechRecognition _Instance;
 		public static GCSpeechRecognition Instance
 		{
 			get
@@ -68,9 +69,9 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition
 		public bool IsRecording => _mediaManager.IsRecording;
 
 		public float[] LastRecordedRaw => _mediaManager.LastRecordedRaw;
-
+		
 		private void Awake()
-		{
+		{			
 			if (_Instance != null)
 			{
 				Destroy(gameObject);
