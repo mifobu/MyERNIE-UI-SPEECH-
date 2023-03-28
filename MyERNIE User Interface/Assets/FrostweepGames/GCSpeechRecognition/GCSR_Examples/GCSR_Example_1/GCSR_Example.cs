@@ -9,6 +9,9 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 	public class GCSR_Example : MonoBehaviour
 	{
 		private GCSpeechRecognition _speechRecognition;
+		
+		//String for storing text to put on Answer Page
+		public static string speechText;
 
 		private Button _startRecordButton,
 					   _stopRecordButton,
@@ -35,7 +38,6 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 
 		private Image _voiceLevelImage;
 
-		
 
 		private void Start()
 		{
@@ -397,17 +399,18 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 				return;
 			}
 
-			//Testing for getting text to appear on Answer Page
+
 			_resultText.text += "\n" + recognitionResponse.results[0].alternatives[0].transcript;
-			Debug.Log(recognitionResponse.results[0].alternatives[0].transcript);
-			//textResult.GetComponent<TextMeshProUGUI>().text = recognitionResponse.results[0].alternatives[0].transcript;
-			_speechRecognition.textResult.GetComponent<TextMeshProUGUI>().text = recognitionResponse.results[0].alternatives[0].transcript;
-			//SceneManager.LoadScene("Answer Page");
 
 			var words = recognitionResponse.results[0].alternatives[0].words;
 
 			if (words != null)
 			{
+				//My code for getting text on Answer Page
+				//Debug.Log(recognitionResponse.results[0].alternatives[0].transcript);
+				speechText = recognitionResponse.results[0].alternatives[0].transcript;
+				SceneManager.LoadScene("Answer Page");
+
 				string times = string.Empty;
 
 				foreach (var item in recognitionResponse.results[0].alternatives[0].words)
@@ -416,6 +419,8 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 				}
 
 				_resultText.text += "\n" + times;
+
+				
 			}
 
 			string other = "\nDetected alternatives: ";
@@ -433,5 +438,5 @@ namespace FrostweepGames.Plugins.GoogleCloud.SpeechRecognition.Examples
 
 			_resultText.text += other;
 		}
-    }
+	}
 }
