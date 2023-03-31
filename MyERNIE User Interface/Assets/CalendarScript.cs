@@ -47,6 +47,7 @@ public class CalendarScript : MonoBehaviour
     }//end of Day class
 
     public List<Day> days = new List<Day>();
+    private List<DateTime> specialDates = new List<DateTime>();
     //Day newDay; //debugging
 
     public Transform[] weeks; //stores CalendarWeeks
@@ -56,7 +57,23 @@ public class CalendarScript : MonoBehaviour
 
     private void Start()
     {
+        FindSpecialDates(DateTime.Now.Year, DateTime.Now.Month);
         UpdateCalendar(DateTime.Now.Year, DateTime.Now.Month);
+    }
+
+    //eventually, I will add web scraping here to find the dates that are hard coded currently
+    void FindSpecialDates(int year, int month)
+    {
+        DateTime d = new DateTime(2023, 3, 13);
+        specialDates.Add(d);
+        DateTime d2 = new DateTime(2023, 3, 14);
+        specialDates.Add(d2);
+        DateTime d3 = new DateTime(2023, 3, 15);
+        specialDates.Add(d3);
+        DateTime d4 = new DateTime(2023, 3, 16);
+        specialDates.Add(d4);
+        DateTime d5 = new DateTime(2023, 3, 17);
+        specialDates.Add(d5);
     }
 
     void UpdateCalendar(int year, int month)
@@ -100,6 +117,15 @@ public class CalendarScript : MonoBehaviour
         if (DateTime.Now.Year == year && DateTime.Now.Month == month)
         {
             days[(DateTime.Now.Day - 1) + startDay].UpdateColor(Color.yellow);
+        }
+
+        foreach (DateTime sd in specialDates)
+        {
+            if (sd.Month == month)
+            {
+                Color lightBlue = new Color(0.4f, 0.5f, 0.9f);
+                days[(sd.Day - 1) + startDay].UpdateColor(lightBlue);
+            }
         }
     }
 
