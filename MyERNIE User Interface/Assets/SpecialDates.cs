@@ -84,7 +84,7 @@ public class SpecialDates : MonoBehaviour
                                     Debug.Log("Month: " + mon + "   Day: " + day);
                                     int yearInt = Int32.Parse(year);
                                     int month = mon.GetHashCode();
-                                    DateTime d = new DateTime(2023, 4, 29);
+                                    DateTime d = new DateTime(yearInt, month, day);
                                     Calendar.CalendarScript.specialDates.Add(d);
 
 
