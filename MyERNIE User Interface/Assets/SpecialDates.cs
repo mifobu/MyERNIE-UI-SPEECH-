@@ -1,36 +1,37 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;  //needed for TMP
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Networking;
 using Calendar;
-using System.Text.RegularExpressions;
 
 public class SpecialDates : MonoBehaviour
 {
-    //public DateTime currDate = Calendar.CalendarScript.currDate;
-    enum month
-    {
-        January, February, March, April, May, June, July, August, September, October, November, December
-    }
-
+    Dictionary<string, int> monthStrings = new Dictionary<string, int>();
 
     void Start()
     {
+        // Scrape through the Academic Calendar page on the ERAU website
         StartCoroutine(GetRequest("https://prescott.erau.edu/campus-life/academic-calendar"));
 
-        //This is how you add a date to the specialDates list
-        //DateTime d = new DateTime(2023, 4, 13);
-        //Calendar.CalendarScript.specialDates.Add(d);
+        // Populate the month dictionary
+        monthStrings.Add("January", 1);
+        monthStrings.Add("February", 2);
+        monthStrings.Add("March", 3);
+        monthStrings.Add("April", 4);
+        monthStrings.Add("May", 5);
+        monthStrings.Add("June", 6);
+        monthStrings.Add("July", 7);
+        monthStrings.Add("August", 8);
+        monthStrings.Add("September", 9);
+        monthStrings.Add("October", 10);
+        monthStrings.Add("November", 11);
+        monthStrings.Add("December", 12);
     }
 
 
     IEnumerator GetRequest(string uri)
     {
-        Debug.Log("This is inside the function");
-        //Debug.Log("Search: " + currDate.ToString("MMMM"));
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
         yield return uwr.SendWebRequest();
 
@@ -43,103 +44,100 @@ public class SpecialDates : MonoBehaviour
         {
             string webpage = uwr.downloadHandler.text;
             var lines = webpage.Split('\n');
-            bool found = false;
-            int datesToStore = 0;
-            string year = string.Empty;
-            //string search = currDate.ToString("MMMM");
-
-
+            string year = "";
+            List<string> monthDays = new List<string>();
 
             foreach (var line in lines)
             {
+                // Handle the year from the HTML text
                 if (line.Contains("Semester"))
                 {
-                    string yearLine = line.Replace("h2", "  ");
-                    Debug.Log("Year Line: " + line);
-                    for (int i = 0; i < yearLine.Length; i++)
+                    if (line.Contains("Fall"))
                     {
-                        if (Char.IsDigit(yearLine[i]))
-                        {
-                            year += yearLine[i];
-                        }
+                        year = line.Substring(9, 4);
                     }
-                    Debug.Log("Year: " + year);
+                    else if (line.Contains("Spring"))
+                    {
+                        year = line.Substring(11, 4);
+                    }
                 }
 
-                foreach (string mon in Enum.GetNames(typeof(month)))
+                // Pick out the lines that have dates in them
+                foreach (var mon in monthStrings.Keys)
                 {
-                    var dateText = line.Split('>', '<');
-                    foreach (var date in dateText)
+                    if (line.Contains(mon + " "))
                     {
-                        if (date.Contains(mon))
+                        var monthDayLines = line.Split('<', '>');
+                        string monthDay = monthDayLines[2]; //the second line contains the date (in the way it's split)
+
+                        // Handling special cases within the HTML text and populate the monthDays list
+                        if (monthDay.Contains("&"))
                         {
-                            for (int day = 31; day > 0; day--)
+                            int index = monthDay.IndexOf("&");
+                            string num1 = monthDay.Substring(index - 3, 2);
+                            string num2 = monthDay.Substring(index + 6);
+
+                            monthDays.Add(mon + num1);
+                            monthDays.Add(mon + num2);
+                        }
+                        else if (monthDay.Contains(",") || monthDay.Contains("-"))
+                        {
+                            if (monthDay.Contains(","))
                             {
-                                if (date.Contains(day.ToString()))
+                                int index = monthDay.IndexOf(",");
+                                string num1 = monthDay.Substring(index - 2, 2);
+
+                                monthDays.Add(mon + num1);
+                            }
+                            if (monthDay.Contains("-"))
+                            {
+                                int index = monthDay.IndexOf("-");
+
+                                string num1 = monthDay.Substring(index - 2, 2);
+                                int begNum = Int32.Parse(num1);
+
+                                string num2 = monthDay.Substring(index + 1);
+                                int endNum = Int32.Parse(num2);
+
+                                for (int i = begNum; i <= endNum; i++)
                                 {
-                                    //Debug.Log("Date: " + mon + " " + day);
-                                    //Debug.Log("Date Line: " + date);
-
-                                    //This is the one I was working with
-                                    Debug.Log("Month: " + mon + "   Day: " + day);
-                                    int yearInt = Int32.Parse(year);
-                                    int month = mon.GetHashCode();
-                                    DateTime d = new DateTime(yearInt, month, day);
-                                    Calendar.CalendarScript.specialDates.Add(d);
-
-
-                                    /*
-                                    if ((date.Contains("-")))
-                                    {
-                                        var dateLineDash = date.Split('-', ' ');
-                                        foreach (var temp in dateLineDash)
-                                        {
-                                            //Debug.Log("            DateLine: " + temp);
-                                            if (temp.Contains(day.ToString()))
-                                            {
-                                                Debug.Log("Month: " + mon + "   Day: " + day);
-                                                datesToStore++;
-                                                break;
-                                            }
-                                        }
-
-                                        if (datesToStore > 1)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else if ((date.Contains("&")))
-                                    {
-                                        var dateLineDash = date.Split('&', ' ');
-                                        foreach (var temp in dateLineDash)
-                                        {
-                                            //Debug.Log("            DateLine: " + temp);
-                                            if (temp.Contains(day.ToString()))
-                                            {
-                                                Debug.Log("Month: " + mon + "   Day: " + day);
-                                                datesToStore++;
-                                                break;
-                                            }
-                                        }
-
-                                        if (datesToStore > 4)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }*/
-                                    break;
+                                    monthDays.Add(mon + i);
                                 }
                             }
-                                //Debug.Log("Line: " + line);
-                            
+                        }
+                        else
+                        {
+                            int index = monthDay.IndexOf(" ");
+
+                            string num = monthDay.Substring(index + 1);
+
+                            monthDays.Add(mon + num);
                         }
                     }
                 }
+            }
 
+            // Iterating through the monthDays list to pick out the month and day
+            foreach (string x in monthDays)
+            {
+                string noSpaces = x.Replace(" ", "");
+                
+                foreach (var mon in monthStrings)
+                {
+                    if (noSpaces.Contains(mon.Key))
+                    {
+                        string d = noSpaces.Substring(mon.Key.Length);
+                        int day = Int32.Parse(d);
+
+                        int month = mon.Value;
+
+                        int yr = Int32.Parse(year);
+
+                        // Add them to the list of specialDates in the CalendarScript.cs so they will be colored differently
+                        DateTime date = new DateTime(yr, month, day);
+                        Calendar.CalendarScript.specialDates.Add(date);
+                    }
+                }
             }
         }
     }
