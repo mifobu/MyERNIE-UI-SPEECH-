@@ -48,16 +48,20 @@ namespace Calendar
                     //return 0; //debugging
                 }
             }
-        }//end of Day class
+        } //end of Day class
 
         public List<Day> days = new List<Day>();
-        public static List<DateTime> specialDates = new List<DateTime>();
-        //Day newDay; //debugging
+        public static List<DateTime> specialDates = new List<DateTime>(); //stores dates that have events from Academic Calendar
 
         public Transform[] weeks; //stores CalendarWeeks
 
         public TextMeshProUGUI MonthAndYear; //public Text MonthAndYear;
         public static DateTime currDate = DateTime.Now;
+
+        public GameObject popUp;
+        public TextMeshProUGUI eventDesc;
+        public TextMeshProUGUI date;
+
 
         private void Start()
         {
@@ -93,12 +97,6 @@ namespace Calendar
                         newDay = new Day(currDay - startDay, Color.white, weeks[w].GetChild(i).gameObject);
                     }
                     days.Add(newDay);
-
-                    // FOR DEBUGGING
-                    //Debug.Log("Current Day Number: ");
-                    //Debug.Log(newDay.dayNum);
-
-
                 }
             }
 
@@ -139,41 +137,30 @@ namespace Calendar
                 currDate = currDate.AddMonths(1);
             }
             UpdateCalendar(currDate.Year, currDate.Month);
-        }
+        }      
 
-
-
-
-
-
-        // Script for Pop Up Events page
-        public GameObject help;
-        public TextMeshProUGUI eventDesc;
-        public TextMeshProUGUI date;
-
+        // Function that runs when a day is clicked on
         public void ToggleOn(int day)
         {
-            //Debug.Log("you clicked on day " + days[day].dayNum);
-
             int dayNum = days[day].dayNum + 1;
             Color dayColor = days[day].dayColor;
-            //Debug.Log("you clicked on color " + dayColor);
 
             if (dayColor != Color.grey)
             {
-                help.SetActive(true);
-                //Debug.Log("Color is NOT gray.");
+                popUp.SetActive(true);
                 date.GetComponent<TextMeshProUGUI>().text = "";
                 eventDesc.GetComponent<TextMeshProUGUI>().text = "";
                 StartCoroutine(GetRequest("https://prescott.erau.edu/campus-life/academic-calendar", dayNum));
             }
         }
 
+        // Function that runs when the X is clicked
         public void ToggleOff()
         {
-            help.SetActive(false);
+            popUp.SetActive(false);
         }
 
+        // Web scraping function for the ERAU Academic Calendar
         IEnumerator GetRequest(string uri, int dayNumber)
         {
             //Debug.Log("In GetRequest with dayNumber " + dayNumber);
@@ -187,68 +174,108 @@ namespace Calendar
 
             else
             {
-                // FOR DEBUGGING
-                //Debug.Log("Received: " + uwr.downloadHandler.text);
-                //string testDay = newDay.dayNum.ToString();
-                //int test = newDay.UpdateDay(newDay.dayNum);
-                //Debug.Log("Current Day Number: ");
-                //Debug.Log(test);
-
-
-
-                //To get the month: currDate.ToString("MMMM")
-                //To get the day: dayNumber
-
                 string webpage = uwr.downloadHandler.text;
                 var lines = webpage.Split('\n');
                 bool found = false;
                 int printedHours = 0;
-                string searchDate = currDate.ToString("MMMM") + " " + dayNumber;
+                string searchMonth = currDate.ToString("MMMM") + " ";
 
-                date.GetComponent<TextMeshProUGUI>().text = searchDate;
+                date.GetComponent<TextMeshProUGUI>().text = searchMonth + dayNumber;
 
+                // Finds matching date that the user clicks on and gets the event description from the next HTML line
                 foreach (var line in lines)
-                {
-                    if (line.IndexOf(searchDate) > 0)
-                    {
-                        found = true;
+                {                    
+                   if (line.Contains(searchMonth))
+                    {                        
+                        var monthDayLines = line.Split('<', '>');
+                        string monthDay = monthDayLines[2];
+
+                        if (monthDay.Contains("&"))
+                        {
+                            int index = monthDay.IndexOf("&");
+                            string num1 = monthDay.Substring(index - 3, 2);
+                            string num2 = monthDay.Substring(index + 6);
+
+                            // Remove spaces for comparison
+                            num1 = num1.Replace(" ", "");
+                            num2 = num2.Replace(" ", "");
+
+                            if (num1 == dayNumber.ToString() || num2 == dayNumber.ToString())
+                            {
+                                found = true;
+                            }
+                        }
+                        else if (monthDay.Contains(",") || monthDay.Contains("-"))
+                        {
+                            // Special case for Dec 10, 2022 on Academic Calendar
+                            if (monthDay.Contains(","))
+                            {
+                                int index = monthDay.IndexOf(",");
+                                string num1 = monthDay.Substring(index - 2, 2);
+
+                                // Remove spaces before comparison
+                                num1 = num1.Replace(" ", "");
+
+                                if (num1 == dayNumber.ToString())
+                                {
+                                    found = true;
+                                    Debug.Log("December 10 special case is complete");
+                                }
+                            }
+                            if (monthDay.Contains("-"))
+                            {
+                                int index = monthDay.IndexOf("-");
+                                string num1 = monthDay.Substring(index - 2, 2);
+                                string num2 = monthDay.Substring(index + 1);
+                                int number1 = Int32.Parse(num1);
+                                int number2 = Int32.Parse(num2);
+
+                                if (dayNumber >= number1 && dayNumber <= number2)
+                                {
+                                    found = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            int index = monthDay.IndexOf(" ");
+                            string num = monthDay.Substring(index + 1);
+
+                            // Remove spaces before comparison
+                            num = num.Replace(" ", "");
+
+                            // Ensures that date is exact match to HTML text
+                            if (num == dayNumber.ToString())
+                            {
+                                found = true;
+                            }
+                        }
                     }
 
                     else if (found)
                     {
-
-                        //DateTime d = new DateTime(2023, 3, 13);
-                        //Debug.Log("Year: " + currDate.ToString("yyyy"));
-                        var text = line.Split('>', '<');
                         //Debug.Log("Line: " + line);
-                        //Debug.Log("text[2] is " + text[2]);
+                        var text = line.Split('>', '<');
 
-                        //fixing double quote issue from HTML text
+                        // Fixing double quote issue from HTML text
                         if (text[2].ToLower().Contains('&'))
                         {
-                            //Debug.Log("This is inside the if loop.");
                             string correctText = text[2].Replace("&ldquo;", "\"").Replace("&rdquo;", "\"");
                             eventDesc.GetComponent<TextMeshProUGUI>().text = correctText;
-
                         }
                         else
                         {
                             eventDesc.GetComponent<TextMeshProUGUI>().text = text[2];
                         }
 
-                        printedHours++;
-
-
-                        if (printedHours >= 1)
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
 
+                // If the date is not listed on the Academic Calendar
                 if (!found)
                 {
-                    eventDesc.GetComponent<TextMeshProUGUI>().text = "There are no events happening today.";
+                    eventDesc.GetComponent<TextMeshProUGUI>().text = "There are no events happening on this day. ";
                 }
             }
         }
